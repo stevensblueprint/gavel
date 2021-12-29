@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/stevensblueprint/gavel#readme",
   "dependencies": {
+    "aws-sdk": "^2.1048.0",
     "express": "^4.17.2"
   }
 }

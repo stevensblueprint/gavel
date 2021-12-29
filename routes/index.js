@@ -17,8 +17,8 @@ Post data to send:
     "class": "cs385",
     "time_limit": "10000",          **in milliseconds**
     "memory_limit": "65536",        **in bytes**
-    "submission_file": "<LINK TO AWS S3>",
-    "test_file": "<LINK TO AWS S3>"
+    "submission_file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
+    "test_file_name": "<FILE NAME AS AWS S3 KNOWS IT>"
 }
 
 The POST request saves the output of the program to the database and generates
