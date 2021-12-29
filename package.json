@@ -1,0 +1,23 @@
+{
+  "name": "gavel",
+  "version": "1.0.0",
+  "description": "A remote code execution engine for aiding programming assignment grading at Stevens Institute of Technology",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stevensblueprint/gavel.git"
+  },
+  "author": "Hamzah Nizami, Simon Gao",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stevensblueprint/gavel/issues"
+  },
+  "homepage": "https://github.com/stevensblueprint/gavel#readme",
+  "dependencies": {
+    "express": "^4.17.2"
+  }
+}
