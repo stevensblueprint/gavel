@@ -19,6 +19,13 @@
   "homepage": "https://github.com/stevensblueprint/gavel#readme",
   "dependencies": {
     "aws-sdk": "^2.1048.0",
-    "express": "^4.17.2"
+    "child_process": "^1.0.2",
+    "express": "^4.17.2",
+    "fs": "*",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.6.0",
+    "eslint-config-google": "^0.14.0"
   }
 }

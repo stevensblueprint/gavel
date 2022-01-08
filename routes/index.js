@@ -1,24 +1,22 @@
 /*
 Example of routes: 
 
-POST /api/cs385/execute 
-GET /api/cs385/retrieve/:id
-POST /api/cs115/execute
-GET /api/cs115/retrieve/:id
-POST /api/cs285/execute
-GET /api/cs285/retrieve/:id
-POST /api/cs496/execute
-GET /api/cs496/retrieve/:id
+POST /api/cs385/execute/batch           * Given a zip file, unzip and execute test script on all files *
+POST /api/cs385/execute/single-test     * Given a single file, execute test script * 
+POST /api/cs385/execute/single-file     * Given a single file, execute it *
+GET /api/cs385/retrieve/:id             * Retrieve the test script *
 
 
-Post data to send:
+Post data to send for /execute/single-test:
 
 { 
     "class": "cs385",
+    "language": "cpp",
     "time_limit": "10000",          **in milliseconds**
     "memory_limit": "65536",        **in bytes**
     "submission_file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
     "test_file_name": "<FILE NAME AS AWS S3 KNOWS IT>"
+    "makefile" : "<MAKEFILE AS AWS S3 KNOWS IT>"    **only required for gcc languages**
 }
 
 The POST request saves the output of the program to the database and generates
