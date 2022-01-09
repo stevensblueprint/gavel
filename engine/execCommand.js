@@ -20,11 +20,6 @@ const execute = async(command, time_limit) => {
                         'explanation': 'Max buffer exceeded. Infinite loop detected.',
                     });
                 }
-            }
-            if (stderr) {
-                errors.push({
-                    'stderr': stderr,
-                });
             } else {
                 output['message'] = 'Successfully executed file.';
                 output['stdout'] = stdout;
