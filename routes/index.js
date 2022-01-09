@@ -26,7 +26,7 @@ an ID associated with the output. You can retrieve the output using the GET comm
 const cs115Routes = require('./cs115');
 const cs284Routes = require('./cs284');
 const cs385Routes = require('./cs385');
-const cs496Routes = require('./cs496')
+const cs496Routes = require('./cs496');
 
 
 const constructorMethod = (app) => {

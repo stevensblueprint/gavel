@@ -20,6 +20,7 @@
   "dependencies": {
     "aws-sdk": "^2.1048.0",
     "child_process": "^1.0.2",
+    "dotenv": "^10.0.0",
     "express": "^4.17.2",
     "fs": "*",
     "uuid": "^3.3.2"
