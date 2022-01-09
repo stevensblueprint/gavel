@@ -38,9 +38,47 @@ AWS.config.update({region: 'us-east-1'});
 //   });
 // });
 
-// router.post('/execute/single-test', (req, res) => {
-//   console.log('hello');
-// });
+router.post('/execute/single-test', async(req, res) => {
+   /*
+    POST data should look like this:
+
+    {
+        "class": "cs115",
+        "language": "py",
+        "file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
+        "test_file_name": "<FILE NAME AS AWS S3 KNOWS IT>"
+        "time_limit": "10000",          **in milliseconds**
+        "memory_limit": "65536",        **in bytes**
+    }
+    */
+  const postDetails = req.body;
+  const errors = checkPost.checkFileAndTestPost('cs115', postDetails);
+  if (errors.length > 0) {
+    return res.json({
+        'error': errors,
+    });
+  }
+
+  let s3 = new AWS.S3();
+  const fileParams = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: postDetails.file_name,
+  };
+
+  const fileResponse = await s3.getObject(fileParams).promise();
+  const file = fileResponse.Body;
+
+  const testParams = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: postDetails.test_file_name,
+  };
+
+  const testResponse = await s3.getObject(testParams).promise();
+  const testFile = testResponse.Body;
+
+  let output = await pythonEngine.runFileAndTest(file, testFile, postDetails);
+  res.json(output);
+});
 
 router.post('/execute/single-file', async (req, res) => {
   /*

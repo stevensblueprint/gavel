@@ -38,12 +38,53 @@ const checkSingleFilePost = (expectedClassName, incomingPost) => {
           errors.push(err);
       }
   });
-
-
+  
   return errors;
 };
 
+const checkFileAndTestPost = (expectedClassName, incomingPost) => {
+  const errors = [];
+
+  const keys = Object.keys(incomingPost);
+  keys.forEach((key) => {
+    if (!check_valid_string(incomingPost[key])) {
+      errors.push(key + ' is not a proper string.');
+    }
+    if (key == 'time_limit' || key == 'memory_limit') {
+      if (!check_valid_integer(incomingPost[key])) {
+        errors.push('The value for ' + key + ' does not parse to an integer,');
+      }
+    }
+  });
+
+  if (expectedClassName !== incomingPost['class']) {
+    errors.push('Class names do not match up.');
+  }
+
+  const expectedLanguage = mappings[incomingPost['class']];
+  if (!expectedLanguage.includes(incomingPost['language'])) {
+    errors.push('Languages do not match up');
+  }
+
+  let s3 = new AWS.S3();
+  const fileParams = {Bucket: process.env.S3_BUCKET_NAME, Key: incomingPost['file_name']};
+  s3.getObject(fileParams, function(err) {
+      if (err) {
+          errors.push(err);
+      }
+  });
+  
+  const testParams = {Bucket: process.env.S3_BUCKET_NAME, Key: incomingPost['test_file_name']};
+  s3.getObject(testParams, function(err) {
+      if (err) {
+          errors.push(err);
+      }
+  });
+  
+  return errors;
+};
 
 module.exports = {
   checkSingleFilePost,
+  checkFileAndTestPost,
 };
