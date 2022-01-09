@@ -1,5 +1,5 @@
-const fs = require('fs');
 const execute = require('./execCommand').execute;
+const fileOp = require('./fileManager');
 
 const runSingleFile = async(file, file_post_data) => {
   console.log('Running single file...');
@@ -12,27 +12,16 @@ const runSingleFile = async(file, file_post_data) => {
       file_name += '.py';
   }
 
-  fs.writeFile(file_name, file, function(err) {
-      if (err) {
-          return {
-              'error': 'File creation failed.',
-          };
-      }
-  });
+  const createFile = fileOp.writeFile(file_name, file);
 
+  if (createFile.error) {
+      return createFile;
+  }
+  
   const command = 'python3 ' + file_name;
   const result = await execute(command, time_limit);
-  
-  fs.unlink(file_name, (err) => {
-      if (err) {
-          if (result.errors) {
-              result.errors.push('Error in removing file');
-          } else {
-              result.error = 'Error in removing file.';
-          }
-      }
-  });
-
+ 
+  fileOp.removeFile(file_name, result);
   return result;
 };
 
@@ -49,45 +38,22 @@ const runFileAndTest = async(file, testFile, postDetails) => {
         fileName += '.py';
     }
 
-    fs.writeFile(fileName, file, function(err) {
-        if (err) {
-            return {
-                'error': 'Program file creation failed.',
-            };
-        }
-    });
+    const createProgramFile = fileOp.writeFile(fileName, file);
+    if (createProgramFile.error) {
+        return createProgramFile;
+    }
 
-    fs.writeFile(testFileName, testFile, function(err) {
-        if (err) {
-            return {
-                'error': 'Test program file creation failed.',
-            };
-        }
-    });
+    const createTestFile = fileOp.writeFile(testFileName, testFile);
+    if (createTestFile.error) {
+        return createTestFile;
+    }
 
     const command = 'python3 ' + testFileName;
     const result = await execute(command, timeLimit);
 
-    fs.unlink(fileName, (err) => {
-        if (err) {
-            if (result.errors) {
-                result.errors.push('Error in removing program file');
-            } else {
-                result.error = 'Error in removing program file.';
-            }
-        }
-    });
-
-    fs.unlink(testFileName, (err) => {
-        if (err) {
-            if (result.errors) {
-                result.errors.push('Error in removing test program file');
-            } else {
-                result.error = 'Error in removing test program file.';
-            }
-        }
-    });
-
+    fileOp.removeFile(fileName, result);
+    fileOp.removeFile(testFileName, result);
+    
     return result;
 };
 
