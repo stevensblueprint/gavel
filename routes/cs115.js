@@ -71,14 +71,7 @@ router.post('/execute/single-file', async (req, res) => {
   const fileResponse = await s3.getObject(params).promise();
   const file = fileResponse.Body;
 
-  let output = pythonEngine.runSingleFile(file, single_file.file_name);
-
-  if (output.error) {
-      res.json({
-          'error': output.error,
-      });
-  }
-
+  let output = await pythonEngine.runSingleFile(file, single_file);
   res.json(output);
 });
 
