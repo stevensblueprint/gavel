@@ -1,11 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const AWS = require('aws-sdk');
-//const {request} = require('express');
+const aws = require('../data/utilAWS');
 const checkPost = require('../helpers/check_post_info');
 const pythonEngine = require('../engine/python');
-
-AWS.config.update({region: 'us-east-1'});
 
 
 // router.get('/retrieve/:id', async (req, res) => {
@@ -59,23 +56,23 @@ router.post('/execute/single-test', async(req, res) => {
     });
   }
 
-  let s3 = new AWS.S3();
-  const fileParams = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: postDetails.file_name,
-  };
+  const getFile = await aws.retrieveFile(postDetails.file_name);
+  if (getFile.error) {
+      return res.json({
+          'error': getFile.error,
+      });
+  }
+  const file = getFile.file;
 
-  const fileResponse = await s3.getObject(fileParams).promise();
-  const file = fileResponse.Body;
-
-  const testParams = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: postDetails.test_file_name,
-  };
-
-  const testResponse = await s3.getObject(testParams).promise();
-  const testFile = testResponse.Body;
-
+  
+  const getTestFile = await aws.retrieveFile(postDetails.test_file_name);
+  if (getTestFile.error) {
+      return res.json({
+          'error': getTestFile.error,
+      });
+  }
+  const testFile = getTestFile.file;
+  
   let output = await pythonEngine.runFileAndTest(file, testFile, postDetails);
   res.json(output);
 });
@@ -100,15 +97,13 @@ router.post('/execute/single-file', async (req, res) => {
       });
   }
 
-  let s3 = new AWS.S3();
-  const params = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: single_file.file_name,
-  };
-
-  const fileResponse = await s3.getObject(params).promise();
-  const file = fileResponse.Body;
-
+  const getFile = await aws.retrieveFile(single_file.file_name);
+  if (getFile.error) {
+      return res.json({
+          'error': getFile.error,
+      });
+  }
+  const file = getFile.file;
   let output = await pythonEngine.runSingleFile(file, single_file);
   res.json(output);
 });

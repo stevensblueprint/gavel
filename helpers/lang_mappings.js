@@ -4,7 +4,7 @@ const mappings = {
     'cs385': ['cpp', 'shell'],
     'cs496': ['ocaml'],
     'cs511': ['java', 'erl'],
-    'cs546': ['js', 'css', 'html']
-}
+    'cs546': ['js', 'css', 'html'],
+};
 
 module.exports = mappings;
