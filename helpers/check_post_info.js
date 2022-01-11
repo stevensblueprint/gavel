@@ -3,6 +3,7 @@ const check_valid_string = require('../helpers/verify_ds').validateString;
 // eslint-disable-next-line camelcase
 const check_valid_integer = require('../helpers/verify_ds').validateInteger;
 const mappings = require('../helpers/lang_mappings');
+const aws = require('../data/utilAWS');
 const AWS = require('aws-sdk');
 
 AWS.config.update({region: 'us-east-1'});
@@ -84,7 +85,45 @@ const checkFileAndTestPost = (expectedClassName, incomingPost) => {
   return errors;
 };
 
+const checkBatchPost = async(expectedClassName, incomingPost) => {
+    const errors = [];
+
+    const keys = Object.keys(incomingPost);
+    keys.forEach((key) => {
+      if (!check_valid_string(incomingPost[key])) {
+        errors.push(key + ' is not a proper string.');
+      }
+      if (key == 'time_limit' || key == 'memory_limit' || key == 'zip_level') {
+        if (!check_valid_integer(incomingPost[key])) {
+          errors.push('The value for ' + key + ' does not parse to an integer,');
+        }
+      }
+    });
+  
+    if (expectedClassName !== incomingPost['class']) {
+      errors.push('Class names do not match up.');
+    }
+  
+    const expectedLanguage = mappings[incomingPost['class']];
+    if (!expectedLanguage.includes(incomingPost['language'])) {
+      errors.push('Languages do not match up');
+    }
+
+    let files = incomingPost.extra_files.split(',');
+    files.push(incomingPost.file_name);
+    files.push(incomingPost.test_file_name);
+
+    for (let file of files) {
+        const getFile = await aws.retrieveFile(file);
+        if (getFile.error) {
+            errors.push(getFile.error);
+        }
+    }
+
+};
+
 module.exports = {
   checkSingleFilePost,
   checkFileAndTestPost,
+  checkBatchPost,
 };

@@ -18,13 +18,15 @@ const removeFile = (fileName, result) => {
     fs.unlink(fileName, (err) => {
         if (err) {
             if (result.errors) {
-                result.errors.push('Error in removing file');
+                result.errors.push('Error in removing file: ' + fileName);
             } else {
-                result.error = 'Error in removing file.';
+                result.errors = ['Error in removing file: ' + fileName];
             }
         }
     });
 };
+
+
 
 module.exports = {
     writeFile,

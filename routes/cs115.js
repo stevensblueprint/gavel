@@ -4,37 +4,6 @@ const aws = require('../data/utilAWS');
 const checkPost = require('../helpers/check_post_info');
 const pythonEngine = require('../engine/python');
 
-
-// router.get('/retrieve/:id', async (req, res) => {
-//   s3 = new AWS.S3();
-
-//   // var bucketParams = {
-//   //     Bucket: 'gavel-test'
-//   // };
-
-//   // s3.createBucket(bucketParams, function(err, data) {
-//   //     if (err) {
-//   //         console.log("Error", err);
-//   //     } else {
-//   //         console.log("Success", data.Location);
-//   //     }
-//   // });
-//   s3.listBuckets(function(err, data) {
-//     if (err) {
-//       console.log(err, err.stack);
-//     } else {
-//       console.log(data);
-//     }
-//   });
-//   const params = {Bucket: 'gavel-test', Key: 'hw6.py'};
-//   const response = await s3.getObject(params).promise();
-//   const fileContent = response.Body.toString('utf-8');
-//   console.log(fileContent);
-//   res.json({
-//     message: 'Hello World! This is GET!',
-//   });
-// });
-
 router.post('/execute/single-test', async(req, res) => {
    /*
     POST data should look like this:
@@ -108,10 +77,46 @@ router.post('/execute/single-file', async (req, res) => {
   res.json(output);
 });
 
-// router.post('/execute/batch', (req, res) => {
-//   res.json({
-//     message: 'Hello World! This is POST!',
-//   });
-// });
+router.post('/execute/batch', async(req, res) => {
+    /*
+    POST data should look like this:
+    {
+        "class": "cs115",
+        "language": "py",
+        "test_file_handles_batch": "False",    ** this indicates that we need to run the test script on each individual submission **
+        "zip_level": 1                  ** how many times does the program have to unzip **
+        "file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
+        "test_file": "<FILE NAME AS AWS S3 KNOWS IT",
+        "extra_files": "<EXTRA FILES DELINEATED BY COMMAS AS AWS S3 KNOWS IT>",
+        "time_limit": "10000",          **in milliseconds**
+        "memory_limit": "65536",        **in bytes**
+        "desired_file_rename": "<WHAT DOES THE FILE NEED TO BE NAMED FOR TEST SCRIPT TO REGISTER IT>"
+    }
+    */
+   const postDetails = req.body;
+   const errors = checkPost.checkBatchPost('cs115', postDetails);
+   if (errors.length > 0) {
+       return res.json({
+           'error': errors,
+       });
+   }
+
+   let fileNames = postDetails.extra_files.split(',');
+   fileNames.unshift(postDetails.test_file);
+
+   let files = [];
+
+   for (let file of fileNames) {
+        const getFile = await aws.retrieveFile(file);
+        if (getFile.error) {
+            return res.json({
+                'error': getFile.error,
+            });
+        }
+        files.unshift([file, getFile]);
+   }
+   let output = await pythonEngine.runBatch(postDetails.file_name, postDetails.test_file, files, postDetails);
+   return res.json(output);
+});
 
 module.exports = router;
