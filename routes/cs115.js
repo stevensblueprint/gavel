@@ -3,6 +3,7 @@ const router = express.Router();
 const aws = require('../data/utilAWS');
 const checkPost = require('../helpers/check_post_info');
 const pythonEngine = require('../engine/python');
+const fileOp = require('../engine/fileManager');
 
 
 // router.get('/retrieve/:id', async (req, res) => {
@@ -108,10 +109,56 @@ router.post('/execute/single-file', async (req, res) => {
   res.json(output);
 });
 
-// router.post('/execute/batch', (req, res) => {
-//   res.json({
-//     message: 'Hello World! This is POST!',
-//   });
-// });
+router.post('/execute/batch', async(req, res) => {
+    /*
+    POST data should look like this:
+    {
+        "class": "cs115",
+        "language": "py",
+        "test_file_handles_batch": "False",    ** this indicates that we need to run the test script on each individual submission **
+        "zip_level": 1                  ** how many times does the program have to unzip **
+        "file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
+        "test_file": "<FILE NAME AS AWS S3 KNOWS IT",
+        "extra_files": "<EXTRA FILES DELINEATED BY COMMAS AS AWS S3 KNOWS IT>",
+        "time_limit": "10000",          **in milliseconds**
+        "memory_limit": "65536",        **in bytes**
+    }
+    */
+   const postDetails = req.body;
+   const errors = checkPost.checkSingleFilePost('cs115', postDetails);
+   if (errors.length > 0) {
+       return res.json({
+           'error': errors,
+       });
+   }
+
+   let fileNames = postDetails.extra_files.split(',');
+   fileNames.unshift(postDetails.test_file);
+   fileNames.unshift(postDetails.file_name);
+
+
+   let files = [];
+
+   for (let file of fileNames) {
+       if (file.slice(file.length - 4) == '.zip') {
+           const getZip = await aws.retrieveZip(file);
+           if (getZip.error) {
+               return res.json(getZip);
+           }
+           console.log('finished writing zip file');
+           const unzipFiles = fileOp.unzipFile(file);
+           if (unzipFiles.error) {
+               return res.json(unzipFiles);
+           }
+       }
+   }
+   return;
+
+   //let output = pythonEngine.runBatch(files, postDetails);
+   //res.json(output);
+
+
+
+});
 
 module.exports = router;

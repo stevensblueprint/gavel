@@ -1,4 +1,5 @@
 const fs = require('fs');
+const extract = require('extract-zip');
 
 const writeFile = (fileName, data) => {
     fs.writeFile(fileName, data, function(err) {
@@ -26,7 +27,27 @@ const removeFile = (fileName, result) => {
     });
 };
 
+const unzipFile = async(fileName) => {
+    /* 
+    Maybe one day this function could handle the zip levels
+    AKA the zip structure found in 385, 496 programs?
+    */
+   console.log(fileName);
+   try {
+       await extract(fileName, { dir: './'});
+       return {
+           'message': 'success',
+       };
+   } catch (e) {
+       return {
+           'error': e.toString(),
+       };
+   }
+
+};
+
 module.exports = {
     writeFile,
     removeFile,
+    unzipFile,
 };
