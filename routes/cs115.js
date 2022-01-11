@@ -122,6 +122,7 @@ router.post('/execute/batch', async(req, res) => {
         "extra_files": "<EXTRA FILES DELINEATED BY COMMAS AS AWS S3 KNOWS IT>",
         "time_limit": "10000",          **in milliseconds**
         "memory_limit": "65536",        **in bytes**
+        "desired_file_rename": "<WHAT DOES THE FILE NEED TO BE NAMED FOR TEST SCRIPT TO REGISTER IT>"
     }
     */
    const postDetails = req.body;
@@ -141,15 +142,29 @@ router.post('/execute/batch', async(req, res) => {
 
    for (let file of fileNames) {
        if (file.slice(file.length - 4) == '.zip') {
-           const getZip = await aws.retrieveZip(file);
-           if (getZip.error) {
-               return res.json(getZip);
-           }
-           console.log('finished writing zip file');
-           const unzipFiles = fileOp.unzipFile(file);
-           if (unzipFiles.error) {
-               return res.json(unzipFiles);
-           }
+        //    const getZip = await aws.retrieveZip(file);
+        //    if (getZip.error) {
+        //        return res.json(getZip);
+        //    }
+        //    console.log('finished writing zip file');
+        //    const unzipFiles = fileOp.unzipFile(file);
+        //    if (unzipFiles.error) {
+        //        return res.json(unzipFiles);
+        //    }
+            let i = 0;
+            // is there a more elegant way for this while loop to happen?
+            // eslint-disable-next-line no-constant-condition
+            while (true) {
+                const getFile = await aws.retrieveFileFromZip(file, i, postDetails.desired_file_rename, '.py');
+                if (getFile instanceof Object) {
+                    if (getFile.noMoreFiles) {
+                        break;
+                    } else {
+                        return res.json(getFile);
+                    }
+                }
+                i += 1;
+            }
        }
    }
    return;

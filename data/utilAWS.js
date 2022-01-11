@@ -3,6 +3,7 @@ AWS.config.update({region: 'us-east-1'});
 const fs = require('fs');
 const join = require('path').join;
 const s3Zip = require('s3-zip');
+const unzipper = require('unzipper');
 
 const retrieveFile = async(fileName) => {
   let s3 = new AWS.S3();
@@ -49,7 +50,37 @@ const retrieveZip = (fileName) => {
     }
 };
 
+const retrieveFileFromZip = async(fileName, fileNumber, desiredFileName, extension) => {
+    let s3 = new AWS.S3();
+    const dir = await unzipper.Open.s3(s3, {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: fileName,
+    });
+    
+    try {
+        return new Promise( (resolve, reject) => {
+            dir.files[fileNumber]
+            .stream()
+            .pipe(fs.createWriteStream(desiredFileName + extension))
+            .on('error',reject)
+            .on('finish',resolve);
+        });
+   } catch (e) {
+        if (e instanceof TypeError) {
+            return {
+                'noMoreFiles': 'Reached end of zip file.',
+            };
+        } else {
+            return {
+                'error': e.toString(),
+            };
+        }
+        
+    }
+};
+
 module.exports = {
     retrieveFile,
     retrieveZip,
+    retrieveFileFromZip,
 };
