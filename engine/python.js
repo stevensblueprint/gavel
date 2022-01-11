@@ -12,7 +12,6 @@ const runSingleFile = async(file, file_post_data) => {
   if (file_name.slice(file_name.length - 3) !== '.py') {
       file_name += '.py';
   }
-  console.log(file);
   const createFile = fileOp.writeFile(file_name, file);
 
   if (createFile.error) {
@@ -58,13 +57,11 @@ const runFileAndTest = async(file, testFile, postDetails) => {
     return result;
 };
 
-const runBatch = async(zipFile, otherFiles, postDetails) => {
+const runBatch = async(zipFile, testFileName, otherFiles, postDetails) => {
     console.log('Running zip files and testing...');
 
     let timeLimit = parseInt(postDetails.time_limit);
-    console.log(otherFiles);
-    //let testFileName = otherFiles[0][0];
-    const command = 'python3 ' + 'cs115_grader.py';
+    const command = 'python3 ' + testFileName;
     otherFiles.forEach((file) => {
         const createFile = fileOp.writeFile(file[0], file[1].file);
         if (createFile.error) {
@@ -80,7 +77,6 @@ const runBatch = async(zipFile, otherFiles, postDetails) => {
     while (true) {
         const getSubmissionFile = await aws.retrieveFileFromZip(zipFile, i, postDetails.desired_file_rename);
         if (getSubmissionFile instanceof Object) {
-            console.log('got an object');
             if (getSubmissionFile.noMoreFiles) {
                 break;
             } else {
@@ -103,10 +99,7 @@ const runBatch = async(zipFile, otherFiles, postDetails) => {
     if (file_removal_errors.errors) {
         responses.push(file_removal_errors);
     }
-
-    console.log('cleaned up');
-    console.log(responses);
-
+    
     return responses;
 
 };

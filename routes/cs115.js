@@ -96,7 +96,6 @@ router.post('/execute/batch', async(req, res) => {
    const postDetails = req.body;
    const errors = checkPost.checkBatchPost('cs115', postDetails);
    if (errors.length > 0) {
-       console.log('sending error for batch post');
        return res.json({
            'error': errors,
        });
@@ -104,23 +103,19 @@ router.post('/execute/batch', async(req, res) => {
 
    let fileNames = postDetails.extra_files.split(',');
    fileNames.unshift(postDetails.test_file);
-   console.log(fileNames);
 
    let files = [];
 
    for (let file of fileNames) {
         const getFile = await aws.retrieveFile(file);
         if (getFile.error) {
-            console.log('sending error for not getting file');
             return res.json({
                 'error': getFile.error,
             });
         }
         files.unshift([file, getFile]);
    }
-   console.log(files);
-   let output = pythonEngine.runBatch(postDetails.file_name, files, postDetails);
-   console.log(output);
+   let output = await pythonEngine.runBatch(postDetails.file_name, postDetails.test_file, files, postDetails);
    return res.json(output);
 });
 

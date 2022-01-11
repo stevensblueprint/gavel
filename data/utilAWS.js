@@ -19,7 +19,6 @@ const retrieveFile = async(fileName) => {
         'file': file,
     };
   } catch (e) {
-      console.log(fileParams.Key);
       return {
           'error': e,
       };
@@ -63,7 +62,6 @@ const retrieveFileFromZip = async(fileName, fileNumber, desiredFileName) => {
         .pipe(fs.createWriteStream(desiredFileName))
         .on('finish',resolve);
     }).catch((e) => {
-        console.log(e);
         if (e instanceof TypeError) {
             return {
                 'noMoreFiles': 'Reached end of zip file.',
