@@ -3,38 +3,6 @@ const router = express.Router();
 const aws = require('../data/utilAWS');
 const checkPost = require('../helpers/check_post_info');
 const pythonEngine = require('../engine/python');
-const fileOp = require('../engine/fileManager');
-
-
-// router.get('/retrieve/:id', async (req, res) => {
-//   s3 = new AWS.S3();
-
-//   // var bucketParams = {
-//   //     Bucket: 'gavel-test'
-//   // };
-
-//   // s3.createBucket(bucketParams, function(err, data) {
-//   //     if (err) {
-//   //         console.log("Error", err);
-//   //     } else {
-//   //         console.log("Success", data.Location);
-//   //     }
-//   // });
-//   s3.listBuckets(function(err, data) {
-//     if (err) {
-//       console.log(err, err.stack);
-//     } else {
-//       console.log(data);
-//     }
-//   });
-//   const params = {Bucket: 'gavel-test', Key: 'hw6.py'};
-//   const response = await s3.getObject(params).promise();
-//   const fileContent = response.Body.toString('utf-8');
-//   console.log(fileContent);
-//   res.json({
-//     message: 'Hello World! This is GET!',
-//   });
-// });
 
 router.post('/execute/single-test', async(req, res) => {
    /*
@@ -126,8 +94,9 @@ router.post('/execute/batch', async(req, res) => {
     }
     */
    const postDetails = req.body;
-   const errors = checkPost.checkSingleFilePost('cs115', postDetails);
+   const errors = checkPost.checkBatchPost('cs115', postDetails);
    if (errors.length > 0) {
+       console.log('sending error for batch post');
        return res.json({
            'error': errors,
        });
@@ -135,45 +104,24 @@ router.post('/execute/batch', async(req, res) => {
 
    let fileNames = postDetails.extra_files.split(',');
    fileNames.unshift(postDetails.test_file);
-   fileNames.unshift(postDetails.file_name);
-
+   console.log(fileNames);
 
    let files = [];
 
    for (let file of fileNames) {
-       if (file.slice(file.length - 4) == '.zip') {
-        //    const getZip = await aws.retrieveZip(file);
-        //    if (getZip.error) {
-        //        return res.json(getZip);
-        //    }
-        //    console.log('finished writing zip file');
-        //    const unzipFiles = fileOp.unzipFile(file);
-        //    if (unzipFiles.error) {
-        //        return res.json(unzipFiles);
-        //    }
-            let i = 0;
-            // is there a more elegant way for this while loop to happen?
-            // eslint-disable-next-line no-constant-condition
-            while (true) {
-                const getFile = await aws.retrieveFileFromZip(file, i, postDetails.desired_file_rename, '.py');
-                if (getFile instanceof Object) {
-                    if (getFile.noMoreFiles) {
-                        break;
-                    } else {
-                        return res.json(getFile);
-                    }
-                }
-                i += 1;
-            }
-       }
+        const getFile = await aws.retrieveFile(file);
+        if (getFile.error) {
+            console.log('sending error for not getting file');
+            return res.json({
+                'error': getFile.error,
+            });
+        }
+        files.unshift([file, getFile]);
    }
-   return;
-
-   //let output = pythonEngine.runBatch(files, postDetails);
-   //res.json(output);
-
-
-
+   console.log(files);
+   let output = pythonEngine.runBatch(postDetails.file_name, files, postDetails);
+   console.log(output);
+   return res.json(output);
 });
 
 module.exports = router;

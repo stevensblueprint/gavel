@@ -1,5 +1,6 @@
 const execute = require('./execCommand').execute;
 const fileOp = require('./fileManager');
+const aws = require('../data/utilAWS');
 
 const runSingleFile = async(file, file_post_data) => {
   console.log('Running single file...');
@@ -57,29 +58,56 @@ const runFileAndTest = async(file, testFile, postDetails) => {
     return result;
 };
 
-const runBatch = async(allFilesAndNames, postDetails) => {
+const runBatch = async(zipFile, otherFiles, postDetails) => {
     console.log('Running zip files and testing...');
 
-    /* 
-    The order of allFilesAndNames is as follows: 
-    [ zipFileNameAndFile, testFileNameAndFile, extraFileNamesAndFiles ]
-    */
+    let timeLimit = parseInt(postDetails.time_limit);
+    console.log(otherFiles);
+    //let testFileName = otherFiles[0][0];
+    const command = 'python3 ' + 'cs115_grader.py';
+    otherFiles.forEach((file) => {
+        const createFile = fileOp.writeFile(file[0], file[1].file);
+        if (createFile.error) {
+            return createFile;
+        }
+    });
+    let responses = [];
+    let file_removal_errors = {};
+    let i = 0;
 
-    console.log(postDetails);
-
-    //for (let file of allFilesAndNames) {
-    const createFile = await fileOp.writeZipFile(allFilesAndNames[0][0], allFilesAndNames[0][1]);
-    if (createFile.error) {
-        return createFile;
+    // is there a more elegant way for this while loop to happen?
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        const getSubmissionFile = await aws.retrieveFileFromZip(zipFile, i, postDetails.desired_file_rename);
+        if (getSubmissionFile instanceof Object) {
+            console.log('got an object');
+            if (getSubmissionFile.noMoreFiles) {
+                break;
+            } else {
+                return {
+                    'error': getSubmissionFile.error,
+                };
+            }
+        }
+        console.log('executing: ' + i);
+        const result = await execute(command, timeLimit);
+        responses.push(result);
+        fileOp.removeFile(postDetails.desired_file_rename, file_removal_errors);
+        i++;
     }
-    //}
 
-    // const zipLevel = parseInt(postDetails.zip_level);
-    // if (zipLevel === 1) {
-    //     // we need to unzip the entire submissions folder and then extract files
+    otherFiles.forEach((file) => {
+        fileOp.removeFile(file[0], file_removal_errors);
+    });
 
+    if (file_removal_errors.errors) {
+        responses.push(file_removal_errors);
+    }
 
-    // }
+    console.log('cleaned up');
+    console.log(responses);
+
+    return responses;
 
 };
 
