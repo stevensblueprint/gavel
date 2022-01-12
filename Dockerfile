@@ -1,17 +1,14 @@
-FROM golang:alpine
-
-RUN apk add --no-cache nodejs yarn
-RUN apk add --no-cache openjdk8
-ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
-ENV PATH="$JAVA_HOME/bin:${PATH}"
-RUN apk add --no-cache python3
+FROM node:alpine
 
 WORKDIR /usr/src/app
 
-COPY ./package.json ./
+RUN apk add --no-cache python3
 
-COPY ./routes .
+COPY package*.json ./
+
+RUN npm i
+
+COPY . .
 
 EXPOSE 8080
-
-CMD [ "node", "app.js" ]
+CMD [ "npm", "start" ]
