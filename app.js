@@ -4,7 +4,8 @@ const app = express();
 const configRoutes = require('./routes');
 app.use(express.json());
 configRoutes(app);
+const port = 3000;
 
-app.listen(3000, () => {
-   console.log('Gavel is running on Port 3000');
+app.listen(port, () => {
+   console.log('Gavel is running on Docker port 3000');
 });

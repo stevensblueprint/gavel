@@ -1,5 +1,13 @@
 const AWS = require('aws-sdk');
-AWS.config.update({region: 'us-east-1'});
+const config = {
+    apiVersion: 'latest',
+    accessKeyId: process.env.S3_ACCESS_KEY,
+    secretAccessKey: process.env.S3_SECRET_KEY,
+    region: process.env.S3_BUCKET_REGION,
+};
+
+
+AWS.config.update(config);
 const fs = require('fs');
 const unzipper = require('unzipper');
 
