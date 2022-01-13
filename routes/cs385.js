@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const checkPost = require('../helpers/check_post_info');
 const aws = require('../data/utilAWS');
+const cppEngine = require('../engine/cpp');
+
 
 router.post('/execute/single-test', async(req, res) => {
    /*
@@ -25,7 +27,8 @@ router.post('/execute/single-file', async (req, res) => {
     {
         "class": "cs385",
         "language": "cpp",
-        "compiler": "-g"       ** could also be -03**
+        "compiler": "-g",      ** could also be -03**
+        "cli_args": ""           **cli args exactly**
         "file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
         "time_limit": "10000",          **in milliseconds**
         "memory_limit": "65536",        **in bytes**
@@ -45,7 +48,7 @@ router.post('/execute/single-file', async (req, res) => {
             'error': getFile.error,
         });
     }
-
+    
     const file = getFile.file;
     let output = await cppEngine.runSingleFile(file, postDetails);
     res.json(output);
