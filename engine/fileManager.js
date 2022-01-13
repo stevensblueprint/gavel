@@ -26,9 +26,16 @@ const removeFile = (fileName, result) => {
     });
 };
 
+const renameFile = (oldFileName, newFileName) => {
+    fs.rename(oldFileName, newFileName, () => {
+        console.log('File renamed');
+    });
+};
+
 
 
 module.exports = {
     writeFile,
     removeFile,
+    renameFile,
 };

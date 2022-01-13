@@ -5,20 +5,20 @@ const aws = require('../data/utilAWS');
 const cppEngine = require('../engine/cpp');
 
 
-router.post('/execute/single-test', async(req, res) => {
-   /*
-    POST data should look like this:
+// router.post('/execute/single-test', async(req, res) => {
+//    /*
+//     POST data should look like this:
 
-    {
-        "class": "cs385",
-        "language": "cpp",
-        "file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
-        "test_file_name": "<FILE NAME AS AWS S3 KNOWS IT>"
-        "time_limit": "10000",          **in milliseconds**
-        "memory_limit": "65536",        **in bytes**
-    }
-    */
-});
+//     {
+//         "class": "cs385",
+//         "language": "cpp",
+//         "file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
+//         "test_file_name": "<FILE NAME AS AWS S3 KNOWS IT>"
+//         "time_limit": "10000",          **in milliseconds**
+//         "memory_limit": "65536",        **in bytes**
+//     }
+//     */
+// });
 
 router.post('/execute/single-file', async (req, res) => {
       /*
@@ -32,6 +32,7 @@ router.post('/execute/single-file', async (req, res) => {
         "file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
         "time_limit": "10000",          **in milliseconds**
         "memory_limit": "65536",        **in bytes**
+        "valgrind_check": "True",
     }
     */
     const postDetails = req.body;

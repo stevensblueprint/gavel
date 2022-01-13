@@ -27,18 +27,40 @@ const runSingleFile = async(file, file_post_data) => {
         return moveCommandResult;
     }
 
+    let makeFileName = makeFilePath.split('/');
+    makeFileName = makeFileName[makeFileName.length - 1];
+    fileOp.renameFile(makeFileName, 'makefile');
+
     const compileCommand = 'make';
     const compileResult = await execute(compileCommand, time_limit);
 
-    if (compileResult.error.length > 0 || compileResult.stderr.length > 0) {
+    if (compileResult.error || compileResult.stderr) {
         return compileResult;
     }
 
     const executableName = file_name.slice(0, file_name.length - 4);
     const executeFileCommand = './' + executableName + ' ' + file_post_data.cli_args;
+    let executeResult = await execute(executeFileCommand, time_limit);
+
+    if (executeResult.error) {
+        if (executeResult.error.killed === false &&
+        executeResult.error.code === 1 &&
+        executeResult.error.signal === null &&
+        executeResult.error.stdout && !executeResult.error.stderr) {
+            executeResult['gavel_message'] = 'It looks like your code executed correctly returned 1 indicating an error. Are you sure you are returning the right thing?';
+        }
+    }
+
+    if (file_post_data.valgrind_check === 'True') {
+        const valgrindCommand = 'valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./' + executableName + ' ' + file_post_data.cli_args;
+        const valgrindResult = await execute(valgrindCommand, time_limit);
+        executeResult['valgrind'] = valgrindResult;
+    }
     
-    fileOp.removeFile(file_name, executeFileCommand);
-    return executeFileCommand;
+    fileOp.removeFile(file_name, executeResult);
+    fileOp.removeFile(executableName, executeResult);
+    fileOp.removeFile('makefile', executeResult);
+    return executeResult;
 };
   
   
