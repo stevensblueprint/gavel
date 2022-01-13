@@ -44,15 +44,23 @@ router.post('/execute/single-file', async (req, res) => {
         });
     }
 
-    const getFile = await aws.retrieveFile(postDetails.file_name);
-    if (getFile.error) {
-        return res.json({
-            'error': getFile.error,
-        });
+    let allFileNames = postDetails.extra_files.length > 0 ? postDetails.extra_files.split(',') : [];
+    allFileNames.unshift(postDetails.file_name);
+
+    let filesAndNames = [];
+    for (let file of allFileNames){
+        console.log(file);
+        const getFile = await aws.retrieveFile(file);
+        if (getFile.error) {
+            console.log('here is the error!');
+            return res.json({
+                'error': getFile.error,
+            });
+        }
+        filesAndNames.push([file, getFile.file]);
     }
     
-    const file = getFile.file;
-    let output = await cppEngine.runSingleFile(file, postDetails);
+    let output = await cppEngine.runSingleFile(filesAndNames, postDetails);
     res.json(output);
 
 });

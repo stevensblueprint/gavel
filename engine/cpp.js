@@ -1,7 +1,7 @@
 const execute = require('./execCommand').execute;
 const fileOp = require('./fileManager');
 
-const runSingleFile = async(file, file_post_data) => {
+const runSingleFile = async(files, file_post_data) => {
     console.log('Running single file...');
 
     let file_name = file_post_data.file_name;
@@ -11,13 +11,14 @@ const runSingleFile = async(file, file_post_data) => {
     if (file_name.slice(file_name.length - 4) !== '.cpp') {
         file_name += '.cpp';
     }
-    const createFile = fileOp.writeFile(file_name, file);
-    const allExtraFiles = file_post_data.split(',');
-  
-    if (createFile.error) {
-        return createFile;
-    }
 
+    files.forEach((nameAndFile) => {
+        const createFile = fileOp.writeFile(nameAndFile[0], nameAndFile[1]);
+        if (createFile.error) {
+            return createFile;
+        }
+    });
+    
     const makeFilePath = file_post_data.compiler === '-03' ? './engine/makefiles/makefile_03' : './engine/makefiles/makefile_g';
     const parentDir = './';
 
