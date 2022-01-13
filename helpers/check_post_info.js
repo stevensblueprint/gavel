@@ -20,7 +20,7 @@ const checkSingleFilePost = (expectedClassName, incomingPost) => {
 
   const keys = Object.keys(incomingPost);
   keys.forEach((key) => {
-    if (!check_valid_string(incomingPost[key])) {
+    if (!check_valid_string(incomingPost[key]) && key !== 'extra_files') {
       errors.push(key + ' is not a proper string.');
     }
     if (key == 'time_limit' || key == 'memory_limit') {
