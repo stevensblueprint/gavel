@@ -12,6 +12,7 @@ const runSingleFile = async(file, file_post_data) => {
         file_name += '.cpp';
     }
     const createFile = fileOp.writeFile(file_name, file);
+    const allExtraFiles = file_post_data.split(',');
   
     if (createFile.error) {
         return createFile;

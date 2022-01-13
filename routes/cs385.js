@@ -33,6 +33,7 @@ router.post('/execute/single-file', async (req, res) => {
         "time_limit": "10000",          **in milliseconds**
         "memory_limit": "65536",        **in bytes**
         "valgrind_check": "True",
+        "extra_files": "<FILES SEPERATED BY COMMAS AS KNOWN BY AWS S3>"
     }
     */
     const postDetails = req.body;
