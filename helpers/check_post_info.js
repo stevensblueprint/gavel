@@ -14,7 +14,7 @@ const config = {
 };
 
 AWS.config.update(config);
-console.log('here');
+
 const checkSingleFilePost = (expectedClassName, incomingPost) => {
   const errors = [];
 
