@@ -28,7 +28,8 @@ router.post('/execute/single-file', async (req, res) => {
         "class": "cs385",
         "language": "cpp",
         "compiler": "-g",      ** could also be -03**
-        "cli_args": ""           **cli args exactly**
+        "cli_args": "",           **cli args exactly**
+        "stdin_args": "",          ** if the program runs with stdin args **
         "file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
         "time_limit": "10000",          **in milliseconds**
         "memory_limit": "65536",        **in bytes**
@@ -49,10 +50,8 @@ router.post('/execute/single-file', async (req, res) => {
 
     let filesAndNames = [];
     for (let file of allFileNames){
-        console.log(file);
         const getFile = await aws.retrieveFile(file);
         if (getFile.error) {
-            console.log('here is the error!');
             return res.json({
                 'error': getFile.error,
             });
