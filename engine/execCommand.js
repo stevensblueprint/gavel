@@ -1,6 +1,6 @@
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
-const spawn = require('child_process').spawn;
+const spawn = require('child_process').spawnSync;
 
 const execute = async(command, time_limit) => {
     let errors = [];
@@ -58,23 +58,30 @@ const execute = async(command, time_limit) => {
 //     });
 //   }
 
-const executeWithStdin = (command, timeLimit, stdinArgs, out, err, fail) => {
-    console.log('hit this function');
+  function waitForEventWithTimeout(socket, event, t) {
+    return new Promise(function(resolve, reject) {
+        var timer;
+
+        function listener(data) {
+            clearTimeout(timer);
+            socket.removeListener(event, listener);
+            resolve(data);
+        }
+
+        socket.on(event, listener);
+        timer = setTimeout(function() {
+            socket.removeListener(event, listener);
+            reject(new Error('timeout'));
+        }, t);
+    });
+}
+
+const executeWithStdin = (command, timeLimit, stdinArgs) => {
     try {
-        const executeStdinProgram = spawn(command, {timeout: timeLimit});
-        executeStdinProgram.stdin.write(stdinArgs);
-        executeStdinProgram.stdin.end();
-        executeStdinProgram.stdout.on('data', (data) => {
-            // console.log(Buffer.from(data).toString());
-            console.log('hit this event');
-            out += Buffer.from(data).toString();
-        });
-        executeStdinProgram.stderr.on('data', (data) => {
-            err += data;
-        });
+        const executeStdinProgram = spawn(command, {input: stdinArgs}, {timeout: timeLimit});
+        return executeStdinProgram;
     } catch (e) {
-        // eslint-disable-next-line no-unused-vars
-        fail += e;
+        return e;
     }
 };
 
