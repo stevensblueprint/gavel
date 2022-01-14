@@ -44,19 +44,12 @@ const runSingleFile = async(files, file_post_data) => {
     const executableName = file_name.slice(0, file_name.length - 4);
 
     if (file_post_data.stdin_args.length > 0) {
-        console.log('here');
         const executable = './' + executableName;
-        let stdout = '';
-        let stderr = '';
-        let error = '';
         let executeStdIn = {};
-        execStdIn(executable, time_limit, file_post_data.stdin_args, stdout, stderr, error);
-        console.log('successfuly execution');
-        console.log(stdout);
-        console.log(stderr);
-        executeStdIn['stdout'] = stdout;
-        executeStdIn['stderr'] = stderr;
-        executeStdIn['error'] = error;
+        const exec = execStdIn(executable, time_limit, file_post_data.stdin_args);
+        executeStdIn['stdout'] = Buffer.from(exec.stdout).toString();
+        executeStdIn['stderr'] = Buffer.from(exec.stderr).toString();
+        
         if (file_post_data.valgrind_check === 'True') {
             executeStdIn['gavel_message'] = 'Valgrind unsupported for CPP files that have stdin.';
         }
