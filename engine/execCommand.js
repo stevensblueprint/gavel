@@ -39,43 +39,6 @@ const execute = async(command, time_limit) => {
     }
 };
 
-// function onExit (childProcess) {
-//     console.log(childProcess);
-//     console.log('stdout...');
-//     console.log(childProcess.stdout);
-//     return new Promise((resolve, reject) => {
-//       childProcess.once('exit', (code, signal) => {
-//         if (code === 0) {
-//           console.log('signal: ' + signal);
-//           resolve(undefined);
-//         } else {
-//           reject(new Error('Exit with error code: '+code));
-//         }
-//       });
-//       childProcess.once('error', (err) => {
-//         reject(err);
-//       });
-//     });
-//   }
-
-  function waitForEventWithTimeout(socket, event, t) {
-    return new Promise(function(resolve, reject) {
-        var timer;
-
-        function listener(data) {
-            clearTimeout(timer);
-            socket.removeListener(event, listener);
-            resolve(data);
-        }
-
-        socket.on(event, listener);
-        timer = setTimeout(function() {
-            socket.removeListener(event, listener);
-            reject(new Error('timeout'));
-        }, t);
-    });
-}
-
 const executeWithStdin = (command, timeLimit, stdinArgs) => {
     try {
         const executeStdinProgram = spawn(command, {input: stdinArgs}, {timeout: timeLimit});
