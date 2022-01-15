@@ -85,7 +85,50 @@ const runSingleFile = async(files, file_post_data) => {
     }
 };
 
+const runFileAndTest = async(file, testFile, postDetails) => {
+    console.log('Running single file and test C++...');
+
+    let fileName = postDetails.file_name;
+    let testFileName = postDetails.test_file_name;
+    let timeLimit = parseInt(postDetails.time_limit);
+
+    const makeFilePath = postDetails.compiler === '-03' ? './engine/makefiles/makefile_03' : './engine/makefiles/makefile_g';
+    const parentDir = './';
+
+    const moveMakeFileCommand = 'cp ' + makeFilePath + ' ' + parentDir;
+    const moveCommandResult = await execute(moveMakeFileCommand, timeLimit);
+
+    if (moveCommandResult.error) {
+        return moveCommandResult;
+    }
+    let makeFileName = makeFilePath.split('/');
+    makeFileName = makeFileName[makeFileName.length - 1];
+    fileOp.renameFile(makeFileName, 'makefile');
+    
+    //might need to check that there is .cpp at the end?
+    if (fileName.slice(fileName.length - 4) !== '.cpp') {
+        fileName += '.cpp';
+    }
+    const createProgramFile = fileOp.writeFile(fileName, file);
+    if (createProgramFile.error) {
+        return createProgramFile;
+    }
+
+    const createTestFile = fileOp.writeFile(testFileName, testFile);
+    if (createTestFile.error) {
+        return createTestFile;
+    }
+    
+    const command = 'bash ' + testFileName;
+    const result = await execute(command, timeLimit);
+    fileOp.removeFile(fileName, result);
+    fileOp.removeFile(testFileName, result);
+    
+    return result;
+};
+
 
 module.exports = {
     runSingleFile,
+    runFileAndTest,
 };

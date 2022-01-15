@@ -2,7 +2,7 @@ FROM node:alpine
 
 WORKDIR /usr/src/app
 
-RUN apk add --no-cache make valgrind gcc g++ python3
+RUN apk add --no-cache bash make valgrind gcc g++ python3
 
 COPY package*.json ./
 

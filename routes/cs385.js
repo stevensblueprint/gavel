@@ -5,20 +5,48 @@ const aws = require('../data/utilAWS');
 const cppEngine = require('../engine/cpp');
 
 
-// router.post('/execute/single-test', async(req, res) => {
-//    /*
-//     POST data should look like this:
+router.post('/execute/single-test', async(req, res) => {
+   /*
+    POST data should look like this:
 
-//     {
-//         "class": "cs385",
-//         "language": "cpp",
-//         "file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
-//         "test_file_name": "<FILE NAME AS AWS S3 KNOWS IT>"
-//         "time_limit": "10000",          **in milliseconds**
-//         "memory_limit": "65536",        **in bytes**
-//     }
-//     */
-// });
+    {
+        "class": "cs385",
+        "language": "cpp",
+        "file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
+        "test_file_name": "<FILE NAME AS AWS S3 KNOWS IT>",
+        "compiler": "-g",
+        "time_limit": "10000",          **in milliseconds**
+        "memory_limit": "65536",        **in bytes**
+    }
+    */
+   const postDetails = req.body;
+   const errors = checkPost.checkFileAndTestPost('cs385', postDetails);
+   if (errors.length > 0) {
+       return res.json({
+           'error': errors,
+       });
+   }
+   const getFile = await aws.retrieveFile(postDetails.file_name);
+   if (getFile.error) {
+       return res.json({
+           'error': getFile.error,
+       });
+   }
+   const file = getFile.file;
+ 
+   
+   const getTestFile = await aws.retrieveFile(postDetails.test_file_name);
+   if (getTestFile.error) {
+       return res.json({
+           'error': getTestFile.error,
+       });
+   }
+   const testFile = getTestFile.file;
+   
+   let output = await cppEngine.runFileAndTest(file, testFile, postDetails);
+   res.json(output);
+
+});
 
 router.post('/execute/single-file', async (req, res) => {
       /*
