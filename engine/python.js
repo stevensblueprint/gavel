@@ -78,6 +78,7 @@ const runBatch = async(zipFile, testFileName, otherFiles, postDetails) => {
         const getSubmissionFile = await aws.retrieveFileFromZip(zipFile, i, postDetails.desired_file_rename);
         if (getSubmissionFile instanceof Object) {
             if (getSubmissionFile.noMoreFiles) {
+                console.log('no more files!');
                 break;
             } else {
                 return {
