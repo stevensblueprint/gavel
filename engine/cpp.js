@@ -1,6 +1,7 @@
 const execute = require('./execCommand').execute;
 const execStdIn = require('./execCommand').executeWithStdin;
 const fileOp = require('./fileManager');
+const aws = require('../data/utilAWS');
 
 const runSingleFile = async(files, file_post_data) => {
     console.log('Running single file...');
@@ -156,6 +157,10 @@ const runBatch = async(zipFile, testFileName, graderFileName, otherFiles, postDe
     let makeFileName = makeFilePath.split('/');
     makeFileName = makeFileName[makeFileName.length - 1];
     fileOp.renameFile(dir + '/' + makeFileName, dir + '/' + 'makefile');
+
+    const zipObject = await aws.retrieveObject(zipFile);
+    const zip = zipObject.file;
+    fileOp.writeFileToPathStream(zip, dir, 'submissions.zip');
 
     const r = await execute('ls batchCppGrades', timeLimit);
     console.log(r);

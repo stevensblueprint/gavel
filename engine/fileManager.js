@@ -30,6 +30,12 @@ const writeFileToPath = (path, data) => {
     };
 };
 
+const writeFileToPathStream = (readObject, path, fileName) => {
+    let readStream = readObject.createReadStream();
+    let writeStream = fs.createWriteStream(path, fileName);
+    readStream.pipe(writeStream);
+};
+
 
 const removeFile = (fileName, result) => {
     fs.unlink(fileName, (err) => {
@@ -75,4 +81,5 @@ module.exports = {
     renameFile,
     createDirectory,
     parseEachFileInZip,
+    writeFileToPathStream,
 };

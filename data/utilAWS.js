@@ -31,6 +31,25 @@ const retrieveFile = async(fileName) => {
   }
 };
 
+const retrieveObject = async(fileName) => {
+    let s3 = new AWS.S3();
+    const fileParams = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: fileName,
+    };
+  
+    try {
+      const fileResponse = await s3.getObject(fileParams).promise();
+      return {
+          'file': fileResponse,
+      };
+    } catch (e) {
+        return {
+            'error': e,
+        };
+    }
+};
+
 
 const retrieveFileFromZip = async(fileName, fileNumber, desiredFileName) => {
     let s3 = new AWS.S3();
@@ -60,4 +79,5 @@ const retrieveFileFromZip = async(fileName, fileNumber, desiredFileName) => {
 module.exports = {
     retrieveFile,
     retrieveFileFromZip,
+    retrieveObject,
 };
