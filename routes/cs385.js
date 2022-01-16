@@ -92,5 +92,49 @@ router.post('/execute/single-file', async (req, res) => {
 
 });
 
+router.post('/execute/batch', async(req, res) => {
+        /*
+    POST data should look like this:
+    {
+        "class": "cs385",
+        "language": "cpp",
+        "file_name": "<FILE NAME ZIP AS AWS S3 KNOWS IT>",
+        "test_file": "<FILE NAME AS AWS S3 KNOWS IT",
+        "grader_file": "<FILE NAME AS AWS S3 KNOWS IT>",
+        "extra_files": "EXTRA FILES DELINEATED BY COMMAS AS AWS S3 KNOWS IT>",
+        "compiler": "-g",
+        "time_limit": "10000",          **in milliseconds**
+        "memory_limit": "65536",        **in bytes**
+    }
+    */
+   const postDetails = req.body;
+   const errors = checkPost.checkBatchPost('cs385', postDetails);
+   if (errors.length > 0) {
+       return res.json({
+           'error': errors,
+       });
+   }
+
+   let fileNames = postDetails.extra_files.split(',');
+   fileNames.unshift(postDetails.grader_file);
+   fileNames.unshift(postDetails.test_file);
+
+   let files = [];
+
+   for (let file of fileNames) {
+       console.log(file);
+        if (file.length > 0) {
+            const getFile = await aws.retrieveFile(file);
+            if (getFile.error) {
+                return res.json({
+                    'error': getFile.error,
+                });
+            }
+            files.unshift([file, getFile]);
+        }
+  }
+   let output = await cppEngine.runBatch(postDetails.file_name, postDetails.test_file, postDetails.grader_file, files, postDetails);
+   return res.json(output);
+});
 
 module.exports = router;

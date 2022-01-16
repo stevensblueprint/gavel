@@ -1,4 +1,6 @@
 const fs = require('fs');
+const unzipper = require('unzipper');
+const etl = require('etl');
 
 const writeFile = (fileName, data) => {
     fs.writeFile(fileName, data, function(err) {
@@ -13,6 +15,21 @@ const writeFile = (fileName, data) => {
         'message' : 'Successfully wrote file.',
     };
 };
+
+const writeFileToPath = (path, data) => {
+    fs.writeFile(path, data, function(err) {
+        if (err) {
+            return {
+                'error': 'File creation failed.',
+            };
+        }
+    });
+
+    return {
+        'message' : 'Successfully wrote file.',
+    };
+};
+
 
 const removeFile = (fileName, result) => {
     fs.unlink(fileName, (err) => {
@@ -32,10 +49,30 @@ const renameFile = (oldFileName, newFileName) => {
     });
 };
 
+const createDirectory = (directoryName) => {
+    fs.mkdir(directoryName, { recursive: true }, (err) => {
+        if (err) throw err;
+    });
+};
+
+const parseEachFileInZip = (pathToZip) => {
+    let results = {};
+    fs.createReadStream(pathToZip)
+        .pipe(unzipper.Parse())
+        .pipe(etl.map(async entry => {
+            const content = await entry.buffer();
+            results[entry.path] = Buffer.from(content).toString();
+        }));
+    return results;
+};
+
 
 
 module.exports = {
     writeFile,
+    writeFileToPath,
     removeFile,
     renameFile,
+    createDirectory,
+    parseEachFileInZip,
 };

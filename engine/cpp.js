@@ -127,8 +127,55 @@ const runFileAndTest = async(file, testFile, postDetails) => {
     return result;
 };
 
+const runBatch = async(zipFile, testFileName, graderFileName, otherFiles, postDetails) => {
+    console.log('Running zip files and testing C++...');
+
+    let timeLimit = parseInt(postDetails.time_limit);
+    
+
+    fileOp.createDirectory('batchCppGrades');
+
+    const dir = './batchCppGrades';
+    otherFiles.forEach( (file) => {
+        console.log(file);
+        const createFile = fileOp.writeFile(dir + '/' + file[0], file[1].file);
+        if (createFile.error) {
+            return createFile;
+        }
+    });
+
+    const command = 'bash ' + 'batchCppGrades/' + graderFileName;
+    const makeFilePath = postDetails.compiler === '-03' ? './engine/makefiles/makefile_03' : './engine/makefiles/makefile_g';
+
+    const moveMakeFileCommand = 'cp ' + makeFilePath + ' ' + dir;
+    const moveCommandResult = await execute(moveMakeFileCommand, timeLimit);
+
+    if (moveCommandResult.error) {
+        return moveCommandResult;
+    }
+    let makeFileName = makeFilePath.split('/');
+    makeFileName = makeFileName[makeFileName.length - 1];
+    fileOp.renameFile(dir + '/' + makeFileName, dir + '/' + 'makefile');
+
+    const r = await execute('ls batchCppGrades', timeLimit);
+    console.log(r);
+
+    const x = await execute('ls', timeLimit);
+    console.log(x);
+
+
+    const result = await execute(command, timeLimit);
+    if (result.error) {
+        return result;
+    }
+
+    const output = fileOp.parseEachFileInZip('./batchCppGrades/grades.zip');
+    return output;
+};
+
 
 module.exports = {
     runSingleFile,
     runFileAndTest,
+    runBatch,
 };
